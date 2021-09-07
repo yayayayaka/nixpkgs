@@ -741,6 +741,7 @@
   ./services/networking/iscsi/target.nix
   ./services/networking/iwd.nix
   ./services/networking/jicofo.nix
+  ./services/networking/jigasi.nix
   ./services/networking/jitsi-videobridge.nix
   ./services/networking/kea.nix
   ./services/networking/keepalived/default.nix
