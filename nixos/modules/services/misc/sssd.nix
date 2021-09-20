@@ -3,6 +3,10 @@ with lib;
 let
   cfg = config.services.sssd;
   nscd = config.services.nscd;
+
+  dataDir = "/var/lib/sssd";
+  settingsFile = "${dataDir}/sssd.conf";
+  settingsFileUnsubstituted = pkgs.writeText "${dataDir}/sssd-unsubsituted.conf" cfg.config;
 in {
   options = {
     services.sssd = {
@@ -38,6 +42,15 @@ in {
           For this to work, the <literal>ssh</literal> SSS service must be enabled in the sssd configuration.
         '';
       };
+      environmentFile = mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        description = ''
+          File containing environment variables to be passed to the sssd service,
+          in which secret tokens can be specified securely by defining values for
+          <literal>SSSD_LDAP_DEFAULT_AUTHTOK</literal>,
+        '';
+      };
     };
   };
   config = mkMerge [
@@ -51,22 +64,28 @@ in {
         wants = [ "nss-user-lookup.target" ];
         restartTriggers = [
           config.environment.etc."nscd.conf".source
-          config.environment.etc."sssd/sssd.conf".source
+          settingsFileUnsubstituted
         ];
         script = ''
           export LDB_MODULES_PATH+="''${LDB_MODULES_PATH+:}${pkgs.ldb}/modules/ldb:${pkgs.sssd}/modules/ldb"
           mkdir -p /var/lib/sss/{pubconf,db,mc,pipes,gpo_cache,secrets} /var/lib/sss/pipes/private /var/lib/sss/pubconf/krb5.include.d
-          ${pkgs.sssd}/bin/sssd -D
+          ${pkgs.sssd}/bin/sssd -D -c ${settingsFile}
         '';
         serviceConfig = {
           Type = "forking";
           PIDFile = "/run/sssd.pid";
+          StateDirectory = baseNameOf dataDir;
+          EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
         };
-      };
-
-      environment.etc."sssd/sssd.conf" = {
-        text = cfg.config;
-        mode = "0400";
+        preStart = ''
+          [ -f ${settingsFile} ] && rm -f ${settingsFile}
+          old_umask=$(umask)
+          umask 0177
+          ${pkgs.envsubst}/bin/envsubst \
+            -o ${settingsFile} \
+            -i ${settingsFileUnsubstituted}
+          umask $old_umask
+        '';
       };
 
       system.nssModules = [ pkgs.sssd ];
