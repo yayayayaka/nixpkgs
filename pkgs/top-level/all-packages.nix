@@ -21608,6 +21608,8 @@ with pkgs;
 
   smcroute = callPackage ../servers/smcroute { };
 
+  snipe-it = callPackage ../servers/web-apps/snipe-it { };
+
   sogo = callPackage ../servers/web-apps/sogo { };
 
   spacecookie =
