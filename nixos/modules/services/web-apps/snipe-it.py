@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
-with lib;
+     lib;
 
-let
+
   cfg = config.services.snipe-it;
   snipe-it = pkgs.snipe-it.override {
     dataDir = cfg.dataDir;
@@ -18,14 +18,14 @@ let
     #! ${pkgs.runtimeShell}
     cd ${snipe-it}
     sudo=exec
-    if [[ "$USER" != ${user} ]]; then
+       [[ "$USER" != ${user} ]]
       sudo='exec /run/wrappers/bin/sudo -u ${user}'
-    fi
+    
     $sudo ${pkgs.php}/bin/php artisan $*
-  '';
+  ''
 
 
-in {
+   {
   options.services.snipe-it = {
 
     enable = mkEnableOption "A free open source IT asset/license management system";
