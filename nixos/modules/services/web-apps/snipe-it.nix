@@ -97,7 +97,7 @@ in {
       passwordFile = mkOption {
         type = with types; nullOr path;
         default = null;
-        example = "/run/keys/snipe-it-dbpassword";
+        example = "/run/keys/snipe-it/dbpassword";
         description = ''
           A file containing the password corresponding to
           <option>database.user</option>.
