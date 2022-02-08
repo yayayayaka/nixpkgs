@@ -47,7 +47,7 @@ in {
         A file containing the AppKey.
         Used for encryption where needed. Can be generated with <code>head -c 32 /dev/urandom| base64</code>.
       '';
-      example = "/run/keys/snipe-it-appkey";
+      example = "/run/keys/snipe-it/appkey";
       type = types.path;
     };
 
