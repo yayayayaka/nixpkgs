@@ -308,7 +308,7 @@ in {
       serviceConfig = {
         Type = "oneshot";
         User = user;
-        WorkingDirectory = "${snipe-it}";
+        WorkingDirectory = snipe-it;
       };
       script = ''
         set -xeo pipefail
