@@ -311,7 +311,6 @@ in {
         WorkingDirectory = "${snipe-it}";
       };
       script = ''
-        # set permissions
         set -xeo pipefail
         umask 077
         # create .env file
