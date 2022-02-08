@@ -140,7 +140,7 @@ in {
       passwordFile = mkOption {
         type = with types; nullOr path;
         default = null;
-        example = "/run/keys/snipe-it-mailpassword";
+        example = "/run/keys/snipe-it/mailpassword";
         description = ''
           A file containing the password corresponding to
           <option>mail.user</option>.
