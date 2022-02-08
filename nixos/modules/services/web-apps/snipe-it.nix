@@ -313,7 +313,7 @@ in {
       script = ''
         set -xeo pipefail
         umask 077
-        # create .env file
+        # create artisan .env file
         cat <<__EOF > "${cfg.dataDir}/.env"
         APP_ENV=production
         APP_KEY=base64:$(head -n1 ${cfg.appKeyFile})
