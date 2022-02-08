@@ -260,8 +260,7 @@ in {
     };
 
     services.phpfpm.pools.snipe-it = {
-      inherit user;
-      inherit group;
+      inherit user group;
       phpPackage = pkgs.php74;
       phpOptions = ''
         post_max_size = ${cfg.maxUploadSize}
