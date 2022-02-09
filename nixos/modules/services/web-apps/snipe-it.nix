@@ -226,7 +226,7 @@ in {
       default = null;
       example = ''
         ALLOWED_IFRAME_HOSTS="https://example.com"
-        WKHTMLTOPDF=/home/user/bins/wkhtmltopdf
+        WKHTMLTOPDF=${pkgs.wkhtmltopdf}/bin/wkhtmltopdf
       '';
       description = ''
         Lines to be appended verbatim to the snipe-it configuration.
