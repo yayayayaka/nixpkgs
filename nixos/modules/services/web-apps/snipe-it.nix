@@ -44,8 +44,9 @@ in {
 
     appKeyFile = mkOption {
       description = ''
-        A file containing the AppKey.
-        Used for encryption where needed. Can be generated with <code>head -c 32 /dev/urandom| base64</code>.
+        A file containing the Laravel APP_KEY - a 32 character long,
+        base64 encoded key used for encryption where needed. Can be
+        generated with <code>head -c 32 /dev/urandom | base64</code>.
       '';
       example = "/run/keys/snipe-it/appkey";
       type = types.path;
