@@ -55,7 +55,8 @@ in {
     hostName = mkOption {
       description = ''
         FQDN of the snipe-it instance.
-        If you change this in the future you may need to run a command to update stored URLs in the database. Command example: <code>php artisan snipe-it:update-url https://old.example.com https://new.example.com</code>
+        If you change this in the future you may need to run a command to update stored URLs in the database.
+        Command example: <code>snipe-it snipe-it:update-url https://old.example.com https://new.example.com</code>
       '';
       example = "example.com";
       type = types.str;
