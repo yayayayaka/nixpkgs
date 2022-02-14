@@ -13,6 +13,8 @@ let
   user = cfg.user;
   group = cfg.group;
 
+  tlsEnabled = cfg.nginx.addSSL || cfg.nginx.forceSSL || cfg.nginx.onlySSL || cfg.nginx.enableACME;
+
   # shell script for local administration
   artisan = pkgs.writeScriptBin "snipe-it" ''
     #! ${pkgs.runtimeShell}
@@ -23,8 +25,6 @@ let
     fi
     $sudo ${pkgs.php}/bin/php artisan $*
   '';
-
-
 in {
   options.services.snipe-it = {
 
@@ -52,13 +52,28 @@ in {
       type = types.path;
     };
 
-    hostName = mkOption {
+    hostName = lib.mkOption {
+      type = lib.types.str;
+      default = if config.networking.domain != null then
+                  config.networking.fqdn
+                else
+                  config.networking.hostName;
+      defaultText = lib.literalExpression "config.networking.fqdn";
+      example = "snipe-it.example.com";
       description = ''
-        FQDN of the snipe-it instance.
+        The hostname to serve Snipe-IT on.
+      '';
+    };
+
+    appURL = mkOption {
+      description = ''
+        The root URL that you want to host Snipe-IT on. All URLs in Snipe-IT will be generated using this value.
         If you change this in the future you may need to run a command to update stored URLs in the database.
         Command example: <code>snipe-it snipe-it:update-url https://old.example.com https://new.example.com</code>
       '';
-      example = "example.com";
+      default = "http${lib.optionalString tlsEnabled "s"}://${cfg.hostName}";
+      defaultText = ''http''${lib.optionalString tlsEnabled "s"}://''${cfg.hostName}'';
+      example = "https://example.com";
       type = types.str;
     };
 
@@ -217,16 +232,58 @@ in {
       '';
     };
 
-    extraConfig = mkOption {
-      type = types.nullOr types.lines;
-      default = null;
-      example = ''
-        ALLOWED_IFRAME_HOSTS="https://example.com"
-        WKHTMLTOPDF=${pkgs.wkhtmltopdf}/bin/wkhtmltopdf
+    config = mkOption {
+      type = with types;
+        attrsOf
+          (nullOr
+            (either
+              (oneOf [
+                bool
+                int
+                port
+                path
+                str
+              ])
+              (submodule {
+                options = {
+                  _secret = mkOption {
+                    type = nullOr (oneOf [ str path ]);
+                    description = ''
+                      The path to a file containing the value the
+                      option should be set to in the final
+                      configuration file.
+                    '';
+                  };
+                };
+              })));
+      default = {};
+      example = literalExpression ''
+        {
+          ALLOWED_IFRAME_HOSTS = "https://example.com";
+          WKHTMLTOPDF = "${pkgs.wkhtmltopdf}/bin/wkhtmltopdf";
+          AUTH_METHOD = "oidc";
+          OIDC_NAME = "MyLogin";
+          OIDC_DISPLAY_NAME_CLAIMS = "name";
+          OIDC_CLIENT_ID = "snipe-it";
+          OIDC_CLIENT_SECRET = {_secret = "/run/keys/oidc_secret"};
+          OIDC_ISSUER = "https://keycloak.example.com/auth/realms/My%20Realm";
+          OIDC_ISSUER_DISCOVER = true;
+        }
       '';
       description = ''
-        Lines to be appended verbatim to the snipe-it configuration.
-        Refer to <link xlink:href="https://www.snipe-itapp.com/docs/"/> for details on supported values.
+        Snipe-IT configuration options to set in the
+        <filename>.env</filename> file.
+        Refer to <link xlink:href="https://snipe-it.readme.io/docs/configuration"/>
+        for details on supported values.
+
+        Settings containing secret data should be set to an attribute
+        set containing the attribute <literal>_secret</literal> - a
+        string pointing to a file containing the value the option
+        should be set to. See the example to get a better picture of
+        this: in the resulting <filename>.env</filename> file, the
+        <literal>OIDC_CLIENT_SECRET</literal> key will be set to the
+        contents of the <filename>/run/keys/oidc_secret</filename>
+        file.
       '';
     };
   };
@@ -243,6 +300,34 @@ in {
     ];
 
     environment.systemPackages = [ artisan ];
+
+    services.snipe-it.config = {
+      APP_ENV = "production";
+      APP_KEY._secret = cfg.appKeyFile;
+      APP_URL = cfg.appURL;
+      DB_HOST = db.host;
+      DB_PORT = db.port;
+      DB_DATABASE = db.name;
+      DB_USERNAME = db.user;
+      DB_PASSWORD._secret = db.passwordFile;
+      MAIL_DRIVER = mail.driver;
+      MAIL_FROM_NAME = mail.from.name;
+      MAIL_FROM_ADDR = mail.from.address;
+      MAIL_REPLYTO_NAME = mail.from.name;
+      MAIL_REPLYTO_ADDR = mail.from.address;
+      MAIL_BACKUP_NOTIFICATION_ADDRESS = mail.backupNotificationAddress;
+      MAIL_HOST = mail.host;
+      MAIL_PORT = mail.port;
+      MAIL_USERNAME = mail.user;
+      MAIL_ENCRYPTION = mail.encryption;
+      MAIL_PASSWORD._secret = mail.passwordFile;
+      APP_SERVICES_CACHE = "/run/snipe-it/cache/services.php";
+      APP_PACKAGES_CACHE = "/run/snipe-it/cache/packages.php";
+      APP_CONFIG_CACHE = "/run/snipe-it/cache/config.php";
+      APP_ROUTES_CACHE = "/run/snipe-it/cache/routes-v7.php";
+      APP_EVENTS_CACHE = "/run/snipe-it/cache/events.php";
+      SESSION_SECURE_COOKIE = tlsEnabled;
+    };
 
     services.mysql = mkIf db.createLocally {
       enable = true;
@@ -309,42 +394,62 @@ in {
         RuntimeDirectory = "snipe-it/cache";
         RuntimeDirectoryMode = 0700;
       };
-      script = ''
-        set -xeo pipefail
-        umask 077
-        # create artisan .env file
-        cat <<__EOF > "${cfg.dataDir}/.env"
-        APP_ENV=production
-        APP_KEY=base64:$(head -n1 ${cfg.appKeyFile})
-        APP_URL=https://${cfg.hostName}
-        DB_HOST=${db.host}
-        DB_PORT=${toString db.port}
-        DB_DATABASE=${db.name}
-        DB_USERNAME=${db.user}
-        ${optionalString (db.passwordFile != null) "DB_PASSWORD=$(head -n1 ${db.passwordFile})"}
-        MAIL_DRIVER=${mail.driver}
-        MAIL_FROM_NAME='${mail.from.name}'
-        MAIL_FROM_ADDR=${mail.from.address}
-        MAIL_REPLYTO_NAME='${mail.from.name}'
-        MAIL_REPLYTO_ADDR=${mail.from.address}
-        MAIL_BACKUP_NOTIFICATION_ADDRESS=${mail.backupNotificationAddress}
-        MAIL_HOST=${mail.host}
-        MAIL_PORT=${toString mail.port}
-        ${optionalString (mail.user != null) "MAIL_USERNAME=${mail.user}"}
-        ${optionalString (mail.passwordFile != null) "MAIL_PASSWORD=$(head -n1 ${mail.passwordFile})"}
-        ${optionalString (mail.encryption != null) "MAIL_ENCRYPTION=${mail.encryption}"}
-        APP_SERVICES_CACHE=/run/snipe-it/cache/services.php
-        APP_PACKAGES_CACHE=/run/snipe-it/cache/packages.php
-        APP_CONFIG_CACHE=/run/snipe-it/cache/config.php
-        APP_ROUTES_CACHE=/run/snipe-it/cache/routes-v7.php
-        APP_EVENTS_CACHE=/run/snipe-it/cache/events.php
-        ${optionalString (cfg.nginx.addSSL || cfg.nginx.forceSSL || cfg.nginx.onlySSL || cfg.nginx.enableACME) "SESSION_SECURE_COOKIE=true"}
-        ${toString cfg.extraConfig}
-        __EOF
+      path = [ pkgs.replace-secret ];
+      script =
+        let
+          isSecret  = v: isAttrs v && v ? _secret && (isString v._secret || builtins.isPath v._secret);
+          snipeITEnvVars = lib.generators.toKeyValue {
+            mkKeyValue = lib.flip lib.generators.mkKeyValueDefault "=" {
+              mkValueString = v: with builtins;
+                if isInt             v then toString v
+                else if isString     v then v
+                else if true  ==     v then "true"
+                else if false ==     v then "false"
+                else if isSecret     v then
+                  if (isString v._secret) then
+                    hashString "sha256" v._secret
+                  else
+                    hashString "sha256" (builtins.readFile v._secret)
+                else throw "unsupported type ${typeOf v}: ${(lib.generators.toPretty {}) v}";
+            };
+          };
+          secretPaths = lib.mapAttrsToList (_: v: v._secret) (lib.filterAttrs (_: isSecret) cfg.config);
+          mkSecretReplacement = file: ''
+            replace-secret ${escapeShellArgs [
+              (
+                if (isString file) then
+                  builtins.hashString "sha256" file
+                else
+                  builtins.hashString "sha256" (builtins.readFile file)
+              )
+              file
+              "${cfg.dataDir}/.env"
+            ]}
+          '';
+          secretReplacements = lib.concatMapStrings mkSecretReplacement secretPaths;
+          filteredConfig = lib.converge (lib.filterAttrsRecursive (_: v: ! elem v [ {} null ])) cfg.config;
+          snipeITEnv = pkgs.writeText "snipeIT.env" (snipeITEnvVars filteredConfig);
+        in ''
+          # error handling
+          set -euo pipefail
 
-        # migrate db
-        ${pkgs.php}/bin/php artisan migrate --force
-      '';
+          # set permissions
+          umask 077
+
+          # create .env file
+          install -T -m 0600 -o ${user} ${snipeITEnv} "${cfg.dataDir}/.env"
+
+          # replace secrets
+          ${secretReplacements}
+
+          # prepend `base64:` if it does not exist in APP_KEY
+          if ! grep 'APP_KEY=base64:' "${cfg.dataDir}/.env" >/dev/null; then
+              sed -i 's/APP_KEY=/APP_KEY=base64:/' "${cfg.dataDir}/.env"
+          fi
+
+          # migrate db
+          ${pkgs.php}/bin/php artisan migrate --force
+        '';
     };
 
     systemd.tmpfiles.rules = [
