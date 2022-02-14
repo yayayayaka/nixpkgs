@@ -62,12 +62,6 @@ in {
       type = types.str;
     };
 
-    cacheDir = mkOption {
-      description = "snipe-it cache directory";
-      default = "/var/cache/snipe-it";
-      type = types.path;
-    };
-
     dataDir = mkOption {
       description = "snipe-it data directory";
       default = "/var/lib/snipe-it";
@@ -309,8 +303,11 @@ in {
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
+        RemainAfterExit = true;
         User = user;
         WorkingDirectory = snipe-it;
+        RuntimeDirectory = "snipe-it/cache";
+        RuntimeDirectoryMode = 0700;
       };
       script = ''
         set -xeo pipefail
@@ -336,31 +333,21 @@ in {
         ${optionalString (mail.user != null) "MAIL_USERNAME=${mail.user}"}
         ${optionalString (mail.passwordFile != null) "MAIL_PASSWORD=$(head -n1 ${mail.passwordFile})"}
         ${optionalString (mail.encryption != null) "MAIL_ENCRYPTION=${mail.encryption}"}
-        APP_SERVICES_CACHE=${cfg.cacheDir}/services.php
-        APP_PACKAGES_CACHE=${cfg.cacheDir}/packages.php
-        APP_CONFIG_CACHE=${cfg.cacheDir}/config.php
-        APP_ROUTES_CACHE=${cfg.cacheDir}/routes-v7.php
-        APP_EVENTS_CACHE=${cfg.cacheDir}/events.php
+        APP_SERVICES_CACHE=/run/snipe-it/cache/services.php
+        APP_PACKAGES_CACHE=/run/snipe-it/cache/packages.php
+        APP_CONFIG_CACHE=/run/snipe-it/cache/config.php
+        APP_ROUTES_CACHE=/run/snipe-it/cache/routes-v7.php
+        APP_EVENTS_CACHE=/run/snipe-it/cache/events.php
         ${optionalString (cfg.nginx.addSSL || cfg.nginx.forceSSL || cfg.nginx.onlySSL || cfg.nginx.enableACME) "SESSION_SECURE_COOKIE=true"}
         ${toString cfg.extraConfig}
         __EOF
 
         # migrate db
         ${pkgs.php}/bin/php artisan migrate --force
-
-        # clear & create caches (needed in case of update)
-        ${pkgs.php}/bin/php artisan cache:clear
-        ${pkgs.php}/bin/php artisan config:clear
-        ${pkgs.php}/bin/php artisan view:clear
-        ${pkgs.php}/bin/php artisan config:cache
-        ${pkgs.php}/bin/php artisan passport:install
-        #${pkgs.php}/bin/php artisan route:cache
-        #${pkgs.php}/bin/php artisan view:cache
       '';
     };
 
     systemd.tmpfiles.rules = [
-      "d ${cfg.cacheDir}                           0700 ${user} ${group} - -"
       "d ${cfg.dataDir}                            0710 ${user} ${group} - -"
       "d ${cfg.dataDir}/bootstrap                  0750 ${user} ${group} - -"
       "d ${cfg.dataDir}/bootstrap/cache            0750 ${user} ${group} - -"
