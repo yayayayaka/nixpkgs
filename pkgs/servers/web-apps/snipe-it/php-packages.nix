@@ -25,10 +25,10 @@ let
     "asm89/stack-cors" = {
       targetDir = "";
       src = composerEnv.buildZipPackage {
-        name = "asm89-stack-cors-b9c31def6a83f84b4d4a40d35996d375755f0e08";
+        name = "asm89-stack-cors-73e5b88775c64ccc0b84fb60836b30dc9d92ac4a";
         src = fetchurl {
-          url = "https://api.github.com/repos/asm89/stack-cors/zipball/b9c31def6a83f84b4d4a40d35996d375755f0e08";
-          sha256 = "0629c22fhvkvbq6xgfkaain7cy67lfkrlny26l2665gsrdlyhm6a";
+          url = "https://api.github.com/repos/asm89/stack-cors/zipball/73e5b88775c64ccc0b84fb60836b30dc9d92ac4a";
+          sha256 = "1idpisw39ba2dic9jl2s2yrkdgbyny9dfxf0qdr5i0wfvvlmbdih";
         };
       };
     };
@@ -49,16 +49,6 @@ let
         src = fetchurl {
           url = "https://api.github.com/repos/Bacon/BaconQrCode/zipball/5a91b62b9d37cee635bbf8d553f4546057250bee";
           sha256 = "0rb88fg083790bbciffniff7xqkgzm091szm131afhkl8rr7pnkq";
-        };
-      };
-    };
-    "barryvdh/laravel-cors" = {
-      targetDir = "";
-      src = composerEnv.buildZipPackage {
-        name = "barryvdh-laravel-cors-03492f1a3bc74a05de23f93b94ac7cc5c173eec9";
-        src = fetchurl {
-          url = "https://api.github.com/repos/fruitcake/laravel-cors/zipball/03492f1a3bc74a05de23f93b94ac7cc5c173eec9";
-          sha256 = "0lz65afgbr8hlylnl4mqryzgqqh7m9i2rs0yf9msw9wpykblli7c";
         };
       };
     };
@@ -279,6 +269,16 @@ let
         src = fetchurl {
           url = "https://api.github.com/repos/firebase/php-jwt/zipball/d2113d9b2e0e349796e72d2a63cf9319100382d2";
           sha256 = "1h686jkx4x7f2l84r932ydhfdgnh29hwy96nhy7p7n4dl7xk2c73";
+        };
+      };
+    };
+    "fruitcake/laravel-cors" = {
+      targetDir = "";
+      src = composerEnv.buildZipPackage {
+        name = "fruitcake-laravel-cors-783a74f5e3431d7b9805be8afb60fd0a8f743534";
+        src = fetchurl {
+          url = "https://api.github.com/repos/fruitcake/laravel-cors/zipball/783a74f5e3431d7b9805be8afb60fd0a8f743534";
+          sha256 = "13mqhjks048fb5042l0rfrr52rz7knp9gjn8qviw9cx76kllw2c9";
         };
       };
     };
