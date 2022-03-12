@@ -402,7 +402,7 @@ in {
             mkKeyValue = lib.flip lib.generators.mkKeyValueDefault "=" {
               mkValueString = v: with builtins;
                 if isInt             v then toString v
-                else if isString     v then v
+                else if isString     v then "\"${v}\""
                 else if true  ==     v then "true"
                 else if false ==     v then "false"
                 else if isSecret     v then
