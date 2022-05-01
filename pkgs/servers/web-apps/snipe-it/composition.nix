@@ -1,14 +1,11 @@
 {pkgs ? import <nixpkgs> {
     inherit system;
-  }, system ? builtins.currentSystem, noDev ? false}:
+  }, system ? builtins.currentSystem, noDev ? false, php ? pkgs.php, phpPackages ? pkgs.phpPackages}:
 
 let
   composerEnv = import ./composer-env.nix {
     inherit (pkgs) stdenv lib writeTextFile fetchurl unzip;
-    # Requires PHP >= 7.4 and PHP < 8.0 as of v5.3.6
-    # https://snipe-it.readme.io/docs/requirements
-    php = pkgs.php74;
-    phpPackages = pkgs.php74Packages;
+    inherit php phpPackages;
   };
 in
 import ./php-packages.nix {

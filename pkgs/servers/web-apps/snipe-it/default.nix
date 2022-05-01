@@ -5,6 +5,10 @@ let
     inherit pkgs;
     inherit (stdenv.hostPlatform) system;
     noDev = true; # Disable development dependencies
+    # Requires PHP >= 7.4 and PHP < 8.0 as of v5.3.6
+    # https://snipe-it.readme.io/docs/requirements
+    php = pkgs.php74;
+    phpPackages = pkgs.php74Packages;
   }).overrideAttrs (attrs : {
     installPhase = attrs.installPhase + ''
       rm -R $out/storage $out/public/uploads $out/bootstrap/cache
@@ -18,13 +22,13 @@ let
 
 in package.override rec {
   pname = "snipe-it";
-  version = "5.3.10";
+  version = "5.4.3";
 
   src = fetchFromGitHub {
     owner = "snipe";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1pji4f8z6yvkpv28dqy98lkzsw0yb0ss72mnz5krc56z2xrybx8q";
+    sha256 = "053cm5vb0806sj61g0zf0xqqzlchgkdj8zwkry07mhjdbp1k8k7n";
   };
 
   meta = with lib; {
