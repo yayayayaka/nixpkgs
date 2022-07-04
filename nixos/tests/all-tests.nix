@@ -60,6 +60,7 @@ in {
   botamusique = handleTest ./botamusique.nix {};
   bpf = handleTestOn ["x86_64-linux" "aarch64-linux"] ./bpf.nix {};
   breitbandmessung = handleTest ./breitbandmessung.nix {};
+  broken-nixos-subtest = handleTest ./broken-nixos-subtest.nix {};
   brscan5 = handleTest ./brscan5.nix {};
   btrbk = handleTest ./btrbk.nix {};
   btrbk-no-timer = handleTest ./btrbk-no-timer.nix {};
