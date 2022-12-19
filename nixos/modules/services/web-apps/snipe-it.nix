@@ -430,7 +430,7 @@ in {
           snipeITEnv = pkgs.writeText "snipeIT.env" (snipeITEnvVars filteredConfig);
         in ''
           # error handling
-          set -euo pipefail
+          set -xeuo pipefail
 
           # set permissions
           umask 077
@@ -454,8 +454,9 @@ in {
 
           # A placeholder file for invalid barcodes
           invalid_barcode_location="${cfg.dataDir}/public/uploads/barcodes/invalid_barcode.gif"
-          [ ! -e "$invalid_barcode_location" ] \
-              && cp ${snipe-it}/share/snipe-it/invalid_barcode.gif "$invalid_barcode_location"
+          if [ ! -e "$invalid_barcode_location" ]; then
+              cp ${snipe-it}/share/snipe-it/invalid_barcode.gif "$invalid_barcode_location"
+          fi
         '';
     };
 
