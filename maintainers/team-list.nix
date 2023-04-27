@@ -383,6 +383,7 @@ with lib.maintainers; {
       cleeyv
       ryantm
       yuka
+      yayayayaka
     ];
     scope = "Maintain Jitsi.";
     shortName = "Jitsi";
