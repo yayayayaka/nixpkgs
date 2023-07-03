@@ -237,6 +237,8 @@ let
     end
   '';
 
+  defaultGitlabPagesSecretPath = "${cfg.statePath}/gitlab_pages_secret";
+
 in {
 
   imports = [
@@ -775,7 +777,7 @@ in {
 
             api-secret-key = mkOption {
               type = with types; nullOr str;
-              default = "${cfg.statePath}/gitlab_pages_secret";
+              default = defaultGitlabPagesSecretPath;
               internal = true;
               description = lib.mdDoc ''
                 File with secret key used to authenticate with the
@@ -1350,7 +1352,10 @@ in {
             umask u=rwx,g=,o=
 
             openssl rand -hex 32 > ${cfg.statePath}/gitlab_shell_secret
-            ${optionalString cfg.pages.enable ''
+
+            # Generate a shared secret for Gitlab-Pages only if the api-secret-key setting has not been changed.
+            # Older installations used to configure it manually.
+            ${optionalString (cfg.pages.enable && (cfg.pages.settings.api-secret-key == defaultGitlabPagesSecretPath)) ''
                 openssl rand -base64 32 > ${cfg.pages.settings.api-secret-key}
             ''}
 
