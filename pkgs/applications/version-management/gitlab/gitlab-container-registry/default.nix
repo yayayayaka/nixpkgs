@@ -9,10 +9,10 @@ buildGoModule rec {
     owner = "gitlab-org";
     repo = "container-registry";
     inherit rev;
-    sha256 = "sha256-JOXJ8HSTf7yW78SlYzbdn7IAbSwv/UE/W3oSJRyGrAQ=";
+    sha256 = "sha256-xLU3e2ttBlPFD19TGpWtx9RP3kHrx+l2jB+5DQjLjIs=";
   };
 
-  vendorHash = "sha256-4cxfyG1uhqgIheAVDQbIDb4MRSqAUtLgxGYt5MuNfKw=";
+  vendorHash = "sha256-7Zhp3AurF6NkBjMZX5/ev0Ed+Ra2HZVgg8FNZ0c0sBA=";
 
   patches = [
     ./Disable-inmemory-storage-driver-test.patch
