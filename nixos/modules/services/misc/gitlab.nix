@@ -1428,6 +1428,20 @@ in {
           initial_root_password="$(<'${cfg.initialRootPasswordFile}')"
           ${gitlab-rake}/bin/gitlab-rake gitlab:db:configure GITLAB_ROOT_PASSWORD="$initial_root_password" \
                                                              GITLAB_ROOT_EMAIL='${cfg.initialRootEmail}' > /dev/null
+
+          # This fixes a missing column "id_convert_to_bigint" of relation "ci_build_needs" for GitLab >= 16.2.0
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/419593
+          # TODO @yayayayaka: Remove with version 16.4.0: https://gitlab.com/gitlab-org/gitlab/-/issues/415390
+          PSQL() {
+              psql --port=${toString pgsql.port} "$@"
+          }
+
+          PSQL '${cfg.databaseName}' -tAc "ALTER TABLE ci_build_needs ADD COLUMN IF NOT EXISTS id_convert_to_bigint bigint;
+          ALTER TABLE ci_build_needs ALTER COLUMN id_convert_to_bigint TYPE bigint;
+          DROP INDEX IF EXISTS index_ci_build_needs_on_id_convert_to_bigint;
+          CREATE OR REPLACE FUNCTION trigger_3207b8d0d6f3() RETURNS trigger LANGUAGE plpgsql AS ''$$ BEGIN NEW."id_convert_to_bigint" := NEW."id"; RETURN NEW; END; ''$$;
+          ALTER FUNCTION trigger_3207b8d0d6f3 OWNER TO gitlab;
+          UPDATE ci_build_needs SET id_convert_to_bigint = id;"
         '';
       };
     };
