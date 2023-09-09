@@ -9,24 +9,12 @@ let
   toml = pkgs.formats.toml {};
   yaml = pkgs.formats.yaml {};
 
+  git = cfg.packages.gitaly.git;
+
   postgresqlPackage = if config.services.postgresql.enable then
                         config.services.postgresql.package
                       else
                         pkgs.postgresql_13;
-
-  # gitlab 16.3.0 requires git 2.41.0, but nixos 23.05 is at 2.40.1
-  gitPackage = if
-    versionOlder pkgs.git.version "2.41.0" && lib.versionAtLeast (lib.getVersion cfg.packages.gitlab) "16.3"
-  then
-    pkgs.git.overrideAttrs (old: rec {
-      version = "2.41.0";
-      src = pkgs.fetchurl {
-        url = "https://www.kernel.org/pub/software/scm/git/git-${version}.tar.xz";
-        hash = "sha256-50i6/UJM/oCyEsvG8bvMw6R9SGL7HreYiHd1BHhWgEA=";
-      };
-    })
-  else
-    pkgs.git;
 
   gitlabSocket = "${cfg.statePath}/tmp/sockets/gitlab.socket";
   gitalySocket = "${cfg.statePath}/tmp/sockets/gitaly.socket";
@@ -57,7 +45,7 @@ let
     prometheus_listen_addr = "localhost:9236"
 
     [git]
-    bin_path = "${gitPackage}/bin/git"
+    bin_path = "${git}/bin/git"
 
     [gitlab-shell]
     dir = "${cfg.packages.gitlab-shell}"
@@ -190,16 +178,15 @@ let
     MALLOC_ARENA_MAX = "2";
   } // cfg.extraEnv;
 
-  runtimeDeps = with pkgs; [
+  runtimeDeps = [ git ] ++ (with pkgs; [
     nodejs
     gzip
-    gitPackage
     gnutar
     postgresqlPackage
     coreutils
     procps
     findutils # Needed for gitlab:cleanup:orphan_job_artifact_files
-  ];
+  ]);
 
   gitlab-rake = pkgs.stdenv.mkDerivation {
     name = "gitlab-rake";
@@ -1314,12 +1301,11 @@ in {
     systemd.services.gitlab-config = {
       wantedBy = [ "gitlab.target" ];
       partOf = [ "gitlab.target" ];
-      path = with pkgs; [
+      path = [ git ] ++ (with pkgs; [
         jq
         openssl
         replace-secret
-        gitPackage
-      ];
+      ]);
       serviceConfig = {
         Type = "oneshot";
         User = cfg.user;
@@ -1471,9 +1457,8 @@ in {
         SIDEKIQ_MEMORY_KILLER_GRACE_TIME = cfg.sidekiq.memoryKiller.graceTime;
         SIDEKIQ_MEMORY_KILLER_SHUTDOWN_WAIT = cfg.sidekiq.memoryKiller.shutdownWait;
       });
-      path = with pkgs; [
+      path = [ git ] ++ (with pkgs; [
         postgresqlPackage
-        gitPackage
         ruby
         openssh
         nodejs
@@ -1484,7 +1469,7 @@ in {
         gzip
 
         procps # Sidekiq MemoryKiller
-      ];
+      ]);
       serviceConfig = {
         Type = "simple";
         User = cfg.user;
@@ -1501,12 +1486,11 @@ in {
       bindsTo = [ "gitlab-config.service" ];
       wantedBy = [ "gitlab.target" ];
       partOf = [ "gitlab.target" ];
-      path = with pkgs; [
+      path = [ git ] ++ (with pkgs; [
         openssh
-        gitPackage
         gzip
         bzip2
-      ];
+      ]);
       serviceConfig = {
         Type = "simple";
         User = cfg.user;
