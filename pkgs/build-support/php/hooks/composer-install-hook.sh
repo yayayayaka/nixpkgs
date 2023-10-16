@@ -79,7 +79,7 @@ composerInstallBuildHook() {
 
     # Remove all the repositories of type "composer"
     # from the composer.json file.
-    jq -r -c 'del(try .repositories[] | select(.type == "composer"))' composer.json | sponge composer.json
+    jq -r -c 'del(try .repositories[] | select(.type == "composer" or .type == "vcs"))' composer.json | sponge composer.json
 
     # Configure composer to disable packagist and avoid using the network.
     composer config repo.packagist false
