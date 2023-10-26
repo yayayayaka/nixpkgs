@@ -398,7 +398,7 @@ in {
         RuntimeDirectory = "snipe-it/cache";
         RuntimeDirectoryMode = "0700";
       };
-      path = [ pkgs.replace-secret ];
+      path = [ pkgs.replace-secret artisan ];
       script =
         let
           isSecret  = v: isAttrs v && v ? _secret && (isString v._secret || builtins.isPath v._secret);
