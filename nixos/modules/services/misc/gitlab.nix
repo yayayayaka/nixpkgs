@@ -1567,15 +1567,14 @@ in {
       after = [ "network.target" ];
       wantedBy = [ "gitlab.target" ];
       partOf = [ "gitlab.target" ];
-      path = with pkgs; [
+      path = [ git ] ++ (with pkgs; [
         remarshal
         exiftool
-        gitPackage
         gnutar
         gzip
         openssh
         gitlab-workhorse
-      ];
+      ]);
       serviceConfig = {
         Type = "simple";
         User = cfg.user;
@@ -1641,15 +1640,14 @@ in {
       requiredBy = [ "gitlab.target" ];
       partOf = [ "gitlab.target" ];
       environment = gitlabEnv;
-      path = with pkgs; [
+      path = [ git ] ++ (with pkgs; [
         postgresqlPackage
-        gitPackage
         openssh
         nodejs
         procps
         gnupg
         gzip
-      ];
+      ]);
       serviceConfig = {
         Type = "notify";
         User = cfg.user;
