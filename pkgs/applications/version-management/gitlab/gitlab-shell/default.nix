@@ -2,21 +2,21 @@
 
 buildGoModule rec {
   pname = "gitlab-shell";
-  version = "14.29.0";
+  version = "14.30.0";
 
   # nixpkgs-update: no auto update
   src = fetchFromGitLab {
     owner = "gitlab-org";
     repo = "gitlab-shell";
     rev = "v${version}";
-    sha256 = "sha256-MhvFLBH0CLiGNTEjHy7vDhLE3YsvbBL8XRNytPEa6uU=";
+    sha256 = "sha256-QG8HE2ehsD3MgNIsfQEGILioUhg2KoTPf0R122qpVdM=";
   };
 
   buildInputs = [ ruby libkrb5 ];
 
   patches = [ ./remove-hardcoded-locations.patch ];
 
-  vendorHash = "sha256-g1ZaRY0A7oREByNicPvnuxakYrNQNXg4Vy94iyNVdDY=";
+  vendorHash = "sha256-LuTa+wuoIMERhKycqlrm8fyR15ARcd1VQWIgt/pWch8=";
 
   postInstall = ''
     cp -r "$NIX_BUILD_TOP/source"/bin/* $out/bin
