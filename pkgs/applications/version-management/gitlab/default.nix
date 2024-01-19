@@ -64,6 +64,10 @@ let
           preInstall = ''
             export CARGO_HOME="$PWD/../.cargo/"
           '';
+
+          postInstall = ''
+            cp -v $out/lib/ruby/gems/3.1.0/gems/gitlab-glfm-markdown-0.0.10/lib/glfm_markdown.so $out/lib/ruby/gems/3.1.0/gems/gitlab-glfm-markdown-0.0.10/lib/glfm_markdown
+          '';
         };
       };
     groups = [
