@@ -2216,10 +2216,10 @@ src:
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0nblq5r40jsg4sbrh6lsszplpx1wmfwydw3rpz0yd9yh0h1vc403";
+      sha256 = "0z0h4bvfvlwyfx8ia03lr9dlpy38n75v2wxh424v6fhy4z08ycab";
       type = "gem";
     };
-    version = "0.0.10";
+    version = "0.0.11";
   };
   gitlab-housekeeper = {
     dependencies = ["activesupport" "httparty" "rubocop"];
