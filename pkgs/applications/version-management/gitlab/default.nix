@@ -60,13 +60,16 @@ let
             rustPlatform.cargoSetupHook
             rustPlatform.bindgenHook
           ];
+          disallowedReferences = [
+            rustc.unwrapped
+          ];
 
           preInstall = ''
             export CARGO_HOME="$PWD/../.cargo/"
           '';
 
           postInstall = ''
-            mv -v $GEM_HOME/gems/${attrs.gemName}-${attrs.version}/lib/glfm_markdown{.so,}
+            find $out -type f -name .rustc_info.json -delete
           '';
         };
       };
