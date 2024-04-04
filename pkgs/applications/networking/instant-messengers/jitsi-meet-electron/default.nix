@@ -13,14 +13,14 @@
 , pipewire
 }:
 
-buildNpmPackage rec {
+buildNpmPackage (finalAttrs: {
   pname = "jitsi-meet-electron";
   version = "2023.11.3";
 
   src = fetchFromGitHub {
     owner = "jitsi";
     repo = "jitsi-meet-electron";
-    rev = "v${version}";
+    rev = "v${finalAttrs.version}";
     hash = "sha256-gE5CP0l3SrAHGNS6Hr5/MefTtE86JTmc85CwOmylEpg=";
   };
 
@@ -87,7 +87,7 @@ buildNpmPackage rec {
       exec = "jitsi-meet-electron %U";
       icon = "jitsi-meet-electron";
       desktopName = "Jitsi Meet";
-      comment = meta.description;
+      comment = finalAttrs.meta.description;
       categories = [ "VideoConference" "AudioVideo" "Audio" "Video" "Network" ];
       mimeTypes = [ "x-scheme-handler/jitsi-meet" ];
       terminal = false;
@@ -103,4 +103,4 @@ buildNpmPackage rec {
     maintainers = teams.jitsi.members ++ [ maintainers.tomasajt ];
     inherit (electron.meta) platforms;
   };
-}
+})
