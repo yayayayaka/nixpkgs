@@ -4,7 +4,7 @@
 , defaultGemConfig
 , fetchFromGitLab
 , fetchYarnDeps
-, fixup-yarn-lock
+, prefetch-yarn-deps
 , git
 , gitlabEnterprise ? false
 , lib
