@@ -1,6 +1,7 @@
 {
   lib,
   fetchFromGitHub,
+  makeWrapper,
   php,
 }:
 php.buildComposerProject (finalAttrs: {
@@ -14,8 +15,15 @@ php.buildComposerProject (finalAttrs: {
     hash = "sha256-LQABZnmKgJ8qkymmSjhjc+x1qZ/tFqFyQbfeGZECxok=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   composerLock = ./composer.lock;
   vendorHash = "sha256-f18N2qNCUFetCaHaC4X6Benq70x21SVQ3YSs8kovK1g=";
+
+  postInstall = ''
+    wrapProgram $out/bin/laravel \
+      --suffix PATH : ${lib.makeBinPath [ php.packages.composer ]}
+  '';
 
   meta = {
     description = "The Laravel application installer.";
