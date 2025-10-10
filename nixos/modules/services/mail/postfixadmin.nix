@@ -120,7 +120,7 @@ in
           forceSSL = lib.mkDefault true;
           enableACME = lib.mkDefault true;
           locations."/" = {
-            root = "${pkgs.postfixadmin}/public";
+            root = "${pkgs.postfixadmin}/share/php/postfixadmin/public";
             index = "index.php";
             extraConfig = ''
               location ~* \.php$ {
@@ -193,7 +193,7 @@ in
 
     services.phpfpm.pools.postfixadmin = {
       user = user;
-      phpPackage = pkgs.php81;
+      inherit (pkgs.postfixadmin.passthru) phpPackage;
       phpOptions = ''
         error_log = 'stderr'
         log_errors = on
