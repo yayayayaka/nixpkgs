@@ -2,7 +2,7 @@
 {
   name = "postfixadmin";
   meta = with pkgs.lib.maintainers; {
-    maintainers = [ globin ];
+    maintainers = [ yayayayaka ];
   };
 
   nodes = {
