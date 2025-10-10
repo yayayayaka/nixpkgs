@@ -38,7 +38,7 @@ php.buildComposerProject2 (finalAttrs: {
     changelog = "https://github.com/postfixadmin/postfixadmin/releases/tag/${finalAttrs.src.tag}";
     description = "Web based virtual user administration interface for Postfix mail servers";
     homepage = "https://postfixadmin.sourceforge.io/";
-    maintainers = with lib.maintainers; [ globin ];
+    maintainers = with lib.maintainers; [ yayayayaka ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.all;
   };
