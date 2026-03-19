@@ -123,7 +123,7 @@ let
               cp Cargo.* $out
             '';
           };
-          hash = "sha256-XnNIcEoAs/cSIsd3BdEtTAPNbiyfdVmlO7tSIL/9d3w=";
+          hash = "sha256-eh+S72OnkCPTo281RReW9BFjB9Vj84fj/tHoI3yKqRs=";
         };
 
         dontBuild = false;
