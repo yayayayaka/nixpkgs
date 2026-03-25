@@ -2390,8 +2390,6 @@ with pkgs;
     gitlabEnterprise = true;
   };
 
-  gitlab-workhorse = callPackage ../by-name/gi/gitlab/gitlab-workhorse { };
-
   glogg = libsForQt5.callPackage ../tools/text/glogg { };
 
   gmrender-resurrect = callPackage ../tools/networking/gmrender-resurrect {

@@ -5,7 +5,7 @@
   buildGoModule,
 }:
 let
-  data = lib.importJSON ../data.json;
+  data = lib.importJSON ../gitlab/data.json;
 in
 buildGoModule (finalAttrs: {
   pname = "gitlab-workhorse";
